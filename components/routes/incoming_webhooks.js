@@ -1,4 +1,5 @@
 var debug = require('debug')('botkit:incoming_webhooks');
+const path = require('path');
 
 module.exports = function(webserver, controller) {
 
@@ -16,6 +17,15 @@ module.exports = function(webserver, controller) {
         // Now, pass the webhook into be processed
         controller.handleWebhookPayload(req, res, bot);
 
+    });
+
+    // define a route to download a file from Twilio
+    webserver.get('/download/:file(*)',(req, res) => {
+        var file = req.params.file;
+        console.log(file)
+        var fileLocation = path.join('./uploads',file);
+        console.log(fileLocation);
+        res.download(fileLocation, file); 
     });
 
 }
