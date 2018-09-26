@@ -3,3 +3,4 @@ node_modules
 uploads
 components/routes/_*
 .env
+.DS_Store
