@@ -22,7 +22,6 @@ module.exports = function(webserver, controller) {
     // define a route to download a file from Twilio
     webserver.get('/download/:file(*)',(req, res) => {
         var file = req.params.file;
-        console.log(file)
         var fileLocation = path.join('./uploads',file);
         console.log(fileLocation);
         res.download(fileLocation, file); 

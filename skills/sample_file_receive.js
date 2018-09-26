@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const env = require('node-env-file');
+const client = require('twilio')(process.env.twilio_sid, process.env.twilio_token);
 
 let fileName = ''
 let fileNameAndPath = ''
@@ -12,7 +13,7 @@ module.exports = function(controller) {
 
         if (message.raw_message.data.files) {
             bot.retrieveFileInfo(message.raw_message.data.files[0], function(err, file_info) {
-                if (file_info['content-type'] == 'text/plain') {
+                // if (file_info['content-type'] == 'text/plain') {
                     bot.retrieveFile(message.raw_message.data.files[0], function(err, file) {
                         fileName = file_info.filename
                         fileNameAndPath = path.join(process.env.PWD, 'uploads', fileName)
@@ -23,11 +24,18 @@ module.exports = function(controller) {
                             }
                         });
                     });
-                }
+                // }
             });
         }
 
         bot.createConversation(message, function(err, convo) {
+
+
+
+            // create a path to send a success message
+            convo.addMessage({
+                text: 'Excellent!  Your fax has been sent to {{ vars.phoneNumber }}!',
+            },'fax_sent');
 
 
             // Create a yes/no question in the default thread...
@@ -39,8 +47,15 @@ module.exports = function(controller) {
                     pattern: '.*',
                     callback: function(response, convo) {
                         convo.setVar('phoneNumber', '+1' + response.text);
-                        
-                        // convo.gotoThread('text_activation_code');
+                        client.fax.faxes
+                        .create({
+                            from: process.env.twilio_from,
+                            to: '+1' + response.text,
+                            mediaUrl: process.env.public_address + `/download/WebexShareFAQ.pdf`
+                        })
+                        .then(message => console.log(message))
+                        .done();
+                        convo.gotoThread('fax_sent');
                     },
                 },
                 {
